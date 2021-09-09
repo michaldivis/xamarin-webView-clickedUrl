@@ -4,9 +4,12 @@
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
-    <StackLayout>
-        <Label Text="Click the button to open the HTML page." />
-        <Button Command="{Binding OpenHtmlPageCommand}" Text="Open HTML" />
+    <StackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
+        <Label HorizontalTextAlignment="Center" Text="Click the button to open the HTML page." />
+        <Button
+            Command="{Binding OpenHtmlPageCommand}"
+            HorizontalOptions="Center"
+            Text="Open HTML" />
     </StackLayout>
 
 </ContentPage>
