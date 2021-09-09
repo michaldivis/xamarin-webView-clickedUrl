@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -14,6 +9,8 @@ namespace XfWebViewApp01
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class HtmlDisplay : ContentView
     {
+        private const string _baseUrl = "www.baseUrl.org/test/";
+
         public static readonly BindableProperty HtmlContentProperty = BindableProperty.Create(nameof(HtmlContent), typeof(string), typeof(HtmlDisplay), propertyChanged: OnHtmlContentChanged);
         public string HtmlContent
         {
@@ -33,10 +30,9 @@ namespace XfWebViewApp01
             InitializeComponent();
 
             TheWebView.Navigating += TheWebView_Navigating;
-            TheWebView.Navigated += TheWebView_Navigated;
         }
 
-        static void OnHtmlContentChanged(Xamarin.Forms.BindableObject bindable, object oldValue, object newValue)
+        static void OnHtmlContentChanged(BindableObject bindable, object oldValue, object newValue)
         {
             if (bindable is HtmlDisplay htmlDisplay)
             {
@@ -57,7 +53,7 @@ namespace XfWebViewApp01
         {
             var source = new HtmlWebViewSource()
             {
-                BaseUrl = "www.baseUrl.org/test/",
+                BaseUrl = _baseUrl,
                 Html = html
             };
             TheWebView.Source = source;
@@ -67,12 +63,11 @@ namespace XfWebViewApp01
         {
             if (e.NavigationEvent != WebNavigationEvent.NewPage)
             {
-                //unwanted navigation
+                //unwanted navigation, I only care about NewPage
                 e.Cancel = true;
                 return;
             }
 
-            //TODO get link and trigger command
             var link = GetLinkForCurrentPlatform(e);
 
             if(link is null)
@@ -117,12 +112,22 @@ namespace XfWebViewApp01
 
         private string GetLink_Android(WebNavigatingEventArgs e)
         {
-            return e.Url;
+            //no way to get the url
+            var url = e.Url; //this is equal to about:blank#blocked
+            return null;
         }
 
         private string GetLink_iOS(WebNavigatingEventArgs e)
         {
-            return e.Url;
+            var match = Regex.Match(e.Url, $@".*{Regex.Escape(_baseUrl)}(?<link>.*)");
+            if (match.Success is false)
+            {
+                return null;
+            }
+
+            var link = match.Groups["link"].Value;
+
+            return link;
         }
 
         private void TryExecuteLinkClickedCommand(string link)
@@ -131,18 +136,6 @@ namespace XfWebViewApp01
             {
                 LinkClickedCommand.Execute(link);
             }
-        }
-
-        private void TheWebView_Navigated(object sender, WebNavigatedEventArgs e)
-        {
-            //example: maybe call scroll to here
-            //await ScrollToAsync("1.1.4.7");
-        }
-
-        private async Task ScrollToAsync(string link)
-        {
-            string script = $"document.getElementById(\"{link}\").scrollIntoView();";
-            var result = await TheWebView.EvaluateJavaScriptAsync(script);
         }
     }
 }
