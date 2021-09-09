@@ -87,7 +87,7 @@ namespace XfWebViewApp01
                 Device.UWP => GetLink_UWP(e),
                 Device.Android => GetLink_Android(e),
                 Device.iOS => GetLink_iOS(e),
-                _ => throw new Exception()
+                _ => throw new NotImplementedException()
             };
         }
 
